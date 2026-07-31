@@ -1,4 +1,6 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:conda",
-    "python-envs.defaultPackageManager": "ms-python.python:conda"
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "remote.SSH.httpProxy": "http://h172.20.0.1:7897",
+    "remote.SSH.httpsProxy": "http://172.20.0.1:7897"
 }
