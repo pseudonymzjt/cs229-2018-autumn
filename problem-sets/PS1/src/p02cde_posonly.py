@@ -65,6 +65,7 @@ def main(train_path, valid_path, test_path, pred_path):
     alpha = model.predict(x_valid[y_valid == 1]).mean()
 
     # Corrected boundary solves P(y=1|x)/alpha = 1/2, i.e. theta'^T x = 0
+    # note that only intecept requires enhancement
     theta_prime = model.theta + np.log(2 / alpha - 1) * np.array([1, 0, 0])
     plot_path = '{}.png'.format(pred_path_e.rsplit('.', 1)[0])
     util.plot(x_train, y_train, theta_prime, plot_path)

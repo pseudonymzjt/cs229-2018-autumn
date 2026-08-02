@@ -1,6 +1,6 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import util
-
 from linear_model import LinearModel
 
 
@@ -20,7 +20,25 @@ def main(lr, train_path, eval_path, pred_path):
 
     # *** START CODE HERE ***
     # Fit a Poisson Regression model
+    clf = PoissonRegression(step_size=lr)
+    clf.fit(x_train, y_train)
+
+    # Plot training-set labels vs. predictions.
+    # util.plot is for classification decision boundaries, so use a
+    # label-vs-prediction scatter instead.
+    plot_path = '{}.png'.format(pred_path.rsplit('.', 1)[0])
+    y_train_pred = clf.predict(x_train)
+    plt.figure()
+    plt.plot(y_train, 'go', label='label')
+    plt.plot(y_train_pred, 'rx', label='prediction')
+    plt.suptitle('Training Set', fontsize=12)
+    plt.legend(loc='upper left')
+    plt.savefig(plot_path)
+
     # Run on the validation set, and use np.savetxt to save outputs to pred_path
+    x_eval, _ = util.load_dataset(eval_path, add_intercept=True)
+    y_pred = clf.predict(x_eval)
+    np.savetxt(pred_path, y_pred, fmt='%d')
     # *** END CODE HERE ***
 
 
@@ -41,6 +59,20 @@ class PoissonRegression(LinearModel):
             y: Training example labels. Shape (m,).
         """
         # *** START CODE HERE ***
+        # Batch gradient ascent on the full log-likelihood.
+        # Gradient: (1/m) * X^T (y - exp(X theta)); update theta += lr * gradient.
+        # (Part (c)'s stochastic rule is the same per-example gradient without
+        # the 1/m averaging; the dataset's y-values are huge, so averaging is
+        # what keeps lr = 1e-7 stable here.)
+        m, n = x.shape
+
+        if self.theta is None:
+            self.theta = np.zeros(n, dtype=float)
+
+        step = self.step_size / m * x.T @ (y - np.exp(x @ self.theta))
+        while np.linalg.norm(step, 1) >= self.eps:
+            self.theta = self.theta + step
+            step = self.step_size / m * x.T @ (y - np.exp(x @ self.theta))
         # *** END CODE HERE ***
 
     def predict(self, x):
@@ -53,4 +85,5 @@ class PoissonRegression(LinearModel):
             Floating-point prediction for each input, shape (m,).
         """
         # *** START CODE HERE ***
+        return np.exp(x @ self.theta)
         # *** END CODE HERE ***
