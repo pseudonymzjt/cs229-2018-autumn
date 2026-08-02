@@ -119,12 +119,13 @@ class LogisticRegression(LinearModel):
 
 
 if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="Fit logistic regression with Newton's method."
+    main(
+        train_path='../data/ds1_train.csv',
+        eval_path='../data/ds1_valid.csv',
+        pred_path='prediction/p01b_logreg_pred_1.csv',
     )
-    parser.add_argument('train_path')
-    parser.add_argument('eval_path')
-    parser.add_argument('pred_path')
-    main(**vars(parser.parse_args()))
+    main(
+        train_path='../data/ds2_train.csv',
+        eval_path='../data/ds2_valid.csv',
+        pred_path='prediction/p01b_logreg_pred_2.csv',
+    )
