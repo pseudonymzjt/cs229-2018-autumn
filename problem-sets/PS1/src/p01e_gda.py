@@ -124,21 +124,3 @@ class GDA(LinearModel):
         ind = x @ theta + theta_0
         return (ind >= 0).astype(int)
         # *** END CODE HERE
-
-if __name__ == '__main__':
-    main(
-        train_path='../data/ds1_train.csv',
-        eval_path='../data/ds1_valid.csv',
-        pred_path='prediction/p01e_gda_pred_1.csv',
-    )
-    main(
-        train_path='../data/ds1_train.csv',
-        eval_path='../data/ds1_valid.csv',
-        pred_path='prediction/p01e_gda_pred_1_o.csv',
-        apply_box_cox=True,
-    )
-    main(
-        train_path='../data/ds2_train.csv',
-        eval_path='../data/ds2_valid.csv',
-        pred_path='prediction/p01e_gda_pred_2.csv',
-    )
