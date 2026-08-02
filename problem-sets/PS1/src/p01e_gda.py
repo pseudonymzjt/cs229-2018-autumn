@@ -1,21 +1,50 @@
 import numpy as np
 import util
 from linear_model import LinearModel
+from scipy.special import boxcox as apply_boxcox
+from scipy.stats import boxcox
 
 
-def main(train_path, eval_path, pred_path):
+def _box_cox_features(x_train, x_eval):
+    """Fit per-feature Box--Cox parameters on train data and transform both sets."""
+    offsets = np.maximum(0.0, 1.0 - np.min(x_train, axis=0))
+    shifted_train = x_train + offsets
+    shifted_eval = x_eval + offsets
+
+    if np.any(shifted_eval <= 0.0):
+        raise ValueError('Box--Cox requires positive evaluation features after shifting.')
+
+    transformed_train = np.empty_like(shifted_train, dtype=float)
+    transformed_eval = np.empty_like(shifted_eval, dtype=float)
+    for feature_index in range(x_train.shape[1]):
+        transformed_train[:, feature_index], lmbda = boxcox(
+            shifted_train[:, feature_index]
+        )
+        transformed_eval[:, feature_index] = apply_boxcox(
+            shifted_eval[:, feature_index], lmbda
+        )
+
+    return transformed_train, transformed_eval
+
+
+def main(train_path, eval_path, pred_path, apply_box_cox=False):
     """Problem 1(e): Gaussian discriminant analysis (GDA)
 
     Args:
         train_path: Path to CSV file containing dataset for training.
         eval_path: Path to CSV file containing dataset for evaluation.
         pred_path: Path to save predictions.
+        apply_box_cox: Whether to fit and apply a per-feature Box--Cox transform.
     """
     # Load dataset
     x_train, y_train = util.load_dataset(train_path, add_intercept=False)
+    x_eval, _ = util.load_dataset(eval_path, add_intercept=False)
+
+    if apply_box_cox:
+        x_train, x_eval = _box_cox_features(x_train, x_eval)
 
     # *** START CODE HERE ***
-    # instantiate and fit data
+    # Instantiate and fit GDA.
     clf = GDA()
     clf.fit(x_train, y_train)
 
@@ -24,7 +53,6 @@ def main(train_path, eval_path, pred_path):
     util.plot(x_train, y_train, clf.theta, plot_path)
 
     # Save evaluation-set predictions.
-    x_eval, _ = util.load_dataset(eval_path, add_intercept=False)
     predictions = clf.predict(x_eval)
     np.savetxt(pred_path, predictions, fmt='%d')
     # *** END CODE HERE ***
@@ -102,6 +130,12 @@ if __name__ == '__main__':
         train_path='../data/ds1_train.csv',
         eval_path='../data/ds1_valid.csv',
         pred_path='prediction/p01e_gda_pred_1.csv',
+    )
+    main(
+        train_path='../data/ds1_train.csv',
+        eval_path='../data/ds1_valid.csv',
+        pred_path='prediction/p01e_gda_pred_1_o.csv',
+        apply_box_cox=True,
     )
     main(
         train_path='../data/ds2_train.csv',
