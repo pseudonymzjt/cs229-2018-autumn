@@ -2,7 +2,6 @@ import math
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 import util
 
 
@@ -16,6 +15,7 @@ def initial_state():
     """
 
     # *** START CODE HERE ***
+    return []
     # *** END CODE HERE ***
 
 
@@ -33,6 +33,7 @@ def predict(state, kernel, x_i):
         Returns the prediction (i.e 0 or 1)
     """
     # *** START CODE HERE ***
+    return sign(sum(beta * kernel(x, x_i) for beta, x in state))
     # *** END CODE HERE ***
 
 
@@ -47,6 +48,8 @@ def update_state(state, kernel, learning_rate, x_i, y_i):
         y_i: A 0 or 1 indicating the label for a single instance
     """
     # *** START CODE HERE ***
+    beta_i = learning_rate * (y_i - sign(sum(beta * kernel(x, x_i) for beta, x in state)))
+    state.append((beta_i, x_i))
     # *** END CODE HERE ***
 
 
