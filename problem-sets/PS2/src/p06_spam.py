@@ -21,6 +21,7 @@ def get_words(message):
     """
 
     # *** START CODE HERE ***
+    return message.lower().split()
     # *** END CODE HERE ***
 
 
@@ -41,6 +42,16 @@ def create_dictionary(messages):
     """
 
     # *** START CODE HERE ***
+    # extract words
+    words = [word for message in messages for word in get_words(message)]
+
+    # count words
+    word_counts = collections.Counter(words)
+
+    # Filter out rare words
+    freq_words = [word for word, count in word_counts.items() if count >= 5]
+
+    return { word: index for index, word in enumerate(freq_words) }
     # *** END CODE HERE ***
 
 
@@ -62,6 +73,17 @@ def transform_text(messages, word_dictionary):
         A numpy array marking the words present in each message.
     """
     # *** START CODE HERE ***
+    m, n = len(messages), len(word_dictionary)
+    word_counts = [collections.Counter(get_words(message)) for message in messages]
+
+    matrix = np.zeros((m, n), dtype=int)
+
+    for i in range(m):
+        for word, count in word_counts[i].items():
+            if word in word_dictionary:
+                matrix[i][word_dictionary[word]] += count
+
+    return matrix
     # *** END CODE HERE ***
 
 
@@ -82,6 +104,13 @@ def fit_naive_bayes_model(matrix, labels):
     """
 
     # *** START CODE HERE ***
+    _, n = matrix.shape
+
+    phi_y = np.mean(labels)
+    phi_k_y1 = (1 + matrix[labels == 1].sum(axis=0)) / (n + matrix[labels == 1].sum())
+    phi_k_y0 = (1 + matrix[labels == 0].sum(axis=0)) / (n + matrix[labels == 0].sum())
+
+    return phi_y, phi_k_y1, phi_k_y0
     # *** END CODE HERE ***
 
 
@@ -98,6 +127,9 @@ def predict_from_naive_bayes_model(model, matrix):
     Returns: A numpy array containg the predictions from the model
     """
     # *** START CODE HERE ***
+    phi_y, phi_k_y1, phi_k_y0 = model
+
+    return matrix @ (np.log(phi_k_y1) - np.log(phi_k_y0)) + np.log(phi_y / (1 - phi_y)) >= 0
     # *** END CODE HERE ***
 
 
@@ -114,6 +146,14 @@ def get_top_five_naive_bayes_words(model, dictionary):
     Returns: The top five most indicative words in sorted order with the most indicative first
     """
     # *** START CODE HERE ***
+    _, phi_i_y1, phi_i_y0 = model
+
+    inv_dictionary = { v: k for k, v in dictionary.items() }
+
+    # Sort log(phi_i_y1 / phi_i_y0) in descending order and pick the top five
+    top_five_indicative_word_index = np.argsort(-(np.log(phi_i_y1) - np.log(phi_i_y0)))[:5]
+
+    return [inv_dictionary[i] for i in top_five_indicative_word_index]
     # *** END CODE HERE ***
 
 
@@ -134,6 +174,16 @@ def compute_best_svm_radius(train_matrix, train_labels, val_matrix, val_labels, 
         The best radius which maximizes SVM accuracy.
     """
     # *** START CODE HERE ***
+    best_radius = radius_to_consider[0]
+    best_accuracy = .0
+
+    for radius in radius_to_consider:
+        accuracy = np.mean(svm.train_and_predict_svm(train_matrix, train_labels, val_matrix, radius) == val_labels)
+        if accuracy > best_accuracy:
+            best_radius = radius
+            best_accuracy = accuracy
+
+    return best_radius
     # *** END CODE HERE ***
 
 
